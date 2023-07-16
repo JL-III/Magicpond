@@ -1,0 +1,5 @@
+name: Magicpond
+version: '${project.version}'
+main: com.playtheatria.jliii.magicpond.Magicpond
+api-version: 1.19
+load: POSTWORLD
