@@ -1,8 +1,11 @@
 package com.playtheatria.jliii.magicpond.listeners;
 
+import com.gmail.nossr50.skills.fishing.FishingManager;
+import com.gmail.nossr50.util.player.UserManager;
 import com.playtheatria.jliii.magicpond.Magicpond;
 import org.bukkit.*;
 import org.bukkit.entity.Item;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -22,8 +25,26 @@ public class PlayerFish implements Listener {
         this.magicpond = magicpond;
     }
 
+
+
     @EventHandler(priority = EventPriority.MONITOR)
     public void OnFishEvent(PlayerFishEvent event) {
+
+        Player player = event.getPlayer();
+        //Profile not loaded
+        if(UserManager.getPlayer(player) == null) {
+            return;
+        }
+        if (UserManager.getPlayer(event.getPlayer()) == null) {
+            Bukkit.getConsoleSender().sendMessage("Player is null.");
+            return;
+        }
+        FishingManager fishingManager = UserManager.getPlayer(player).getFishingManager();
+        if (fishingManager == null) {
+            Bukkit.getConsoleSender().sendMessage("Fishing manager is null.");
+            return;
+        }
+        if (fishingManager.isExploitingFishing(event.getHook().getLocation().toVector())) return;
         World world = event.getPlayer().getWorld();
         if (event.getCaught() != null && !event.isCancelled() && (event.getState() == PlayerFishEvent.State.CAUGHT_FISH)) {
             if (pondLocation.contains(event.getHook().getLocation().getBlock().getLocation())) {
