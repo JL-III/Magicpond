@@ -11,5 +11,4 @@ public final class Magicpond extends JavaPlugin {
     public void onEnable() {
         Bukkit.getPluginManager().registerEvents(new PlayerFish(ListGenerators.loadMagicPondLocations(), this), this);
     }
-
 }
