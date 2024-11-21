@@ -6,7 +6,7 @@
 
     <groupId>com.playtheatria.jl-iii</groupId>
     <artifactId>magicpond</artifactId>
-    <version>1.0.0-alpha-2</version>
+    <version>1.0.0-alpha.4</version>
     <packaging>jar</packaging>
 
     <name>Magicpond</name>
@@ -62,8 +62,11 @@
             <url>https://oss.sonatype.org/content/groups/public/</url>
         </repository>
         <repository>
-            <id>jitpack.io</id>
-            <url>https://jitpack.io</url>
+            <id>github</id>
+            <url>https://maven.pkg.github.com/JL-III/mcMMO</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
         </repository>
     </repositories>
 
@@ -75,10 +78,16 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>com.github.JL-III</groupId>
-            <artifactId>TheatriaMMO</artifactId>
-            <version>v2.1.225</version>
+            <groupId>com.gmail.nossr50.mcmmo</groupId>
+            <artifactId>mcmmo</artifactId>
+            <version>v2.2.031</version>
             <scope>provided</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.sk89q.worldguard</groupId>
+                    <artifactId>worldguard-legacy</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
     </dependencies>
 </project>
