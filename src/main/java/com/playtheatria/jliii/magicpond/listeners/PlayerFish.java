@@ -25,8 +25,6 @@ public class PlayerFish implements Listener {
         this.magicpond = magicpond;
     }
 
-
-
     @EventHandler(priority = EventPriority.MONITOR)
     public void OnFishEvent(PlayerFishEvent event) {
 
@@ -72,6 +70,5 @@ public class PlayerFish implements Listener {
         int range = (10) + 1;
         return (int) (Math.random() * range);
     }
-
 }
 
