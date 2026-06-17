@@ -22,11 +22,11 @@ public class Settings {
 
     public void load(FileConfiguration config) {
         enabled = config.getBoolean("overfishing.enabled", true);
-        cellSize = Math.max(1, config.getInt("overfishing.cell-size", 8));
-        pressureCap = config.getDouble("overfishing.pressure-cap", 10.0);
-        resumeThreshold = config.getDouble("overfishing.resume-threshold", 6.0);
+        cellSize = Math.max(1, config.getInt("overfishing.cell-size", 6));
+        pressureCap = config.getDouble("overfishing.pressure-cap", 5.0);
+        resumeThreshold = config.getDouble("overfishing.resume-threshold", 2.0);
         gainPerCatch = config.getDouble("overfishing.gain-per-catch", 1.0);
-        recoveryHalfLifeSeconds = Math.max(1.0, config.getDouble("overfishing.recovery-half-life-seconds", 180.0));
+        recoveryHalfLifeSeconds = Math.max(1.0, config.getDouble("overfishing.recovery-half-life-seconds", 120.0));
         notifyPlayer = config.getBoolean("overfishing.notify-player", true);
         sweepIntervalSeconds = Math.max(5, config.getInt("overfishing.sweep-interval-seconds", 120));
 

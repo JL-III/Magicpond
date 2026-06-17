@@ -14,26 +14,31 @@ overfishing:
   enabled: true
 
   # Edge length, in blocks, of a grid cell. Hooks landing in the same cell
-  # share one pressure pool. Bigger = a wider area counts as "one spot".
-  cell-size: 8
+  # share one pressure pool. Bigger = a wider area counts as "one spot";
+  # smaller = aiming your cast a few blocks over counts as a fresh spot.
+  cell-size: 6
 
   # Pressure at which a cell becomes depleted. With gain-per-catch = 1.0 this is
-  # roughly "how many rapid catches in one spot before fish stop biting".
-  pressure-cap: 10.0
+  # roughly "how many catches in one spot before fish stop biting" (~5-6 here).
+  # NOTE: this is the main sensitivity lever. Pressure also decays (below), so a
+  # cell only depletes if you fish it faster than it recovers; a LOWER cap makes
+  # the mechanic both trigger sooner and stay sensitive at slower fishing speeds.
+  pressure-cap: 5.0
 
-  # A depleted cell only starts giving fish again once its pressure decays below
-  # this value. Keep it below pressure-cap to avoid flickering at the boundary.
-  resume-threshold: 6.0
+  # A depleted cell only gives fish again once its pressure decays below this.
+  # Keep it well under pressure-cap so a fished-out spot stays dead long enough
+  # to push the player to move on (hysteresis, no flickering at the boundary).
+  resume-threshold: 2.0
 
   # Pressure added per fish caught (applied even to denied catches, so an
   # autofisher hammering a depleted spot keeps it depleted).
   gain-per-catch: 1.0
 
-  # Time, in seconds, for a cell's pressure to halve. Lower = spots recover
-  # faster (more forgiving); higher = depletion lingers longer.
-  # Casual fishing settles at a low pressure and never trips the cap; only
-  # sustained rapid fishing climbs past it.
-  recovery-half-life-seconds: 180
+  # Time, in seconds, for a cell's pressure to halve. This controls BOTH how
+  # reliably depletion triggers (longer = more sensitive) and how long a dried
+  # spot takes to recover (longer = lingers). At 120s a fished-out spot comes
+  # back in ~2-3 minutes, while normal-speed fishing still trips the cap.
+  recovery-half-life-seconds: 120
 
   # Send the player an action-bar message when a catch is denied.
   notify-player: true

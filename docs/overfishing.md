@@ -46,13 +46,17 @@ on catch in cell C:
 ```
 
 Because pressure **decays exponentially**, the rate of fishing decides the
-outcome on its own:
+outcome. Steady fishing settles at an equilibrium of
+`gain / (1 - ½^(interval / half-life))`:
 
-- **Casual fishing** reaches a low equilibrium far below the cap and never trips.
-  (e.g. one catch / 60 s with a 180 s half-life settles at ~4.9 pressure.)
-- **Sustained autofishing** climbs past the cap in ~`pressure-cap / gain` catches
-  (~10 by default) and stays depleted while the bot keeps casting, because denied
-  catches still add pressure.
+- **Sustained one-spot fishing** climbs past the cap in ~`pressure-cap / gain`
+  catches (~5 by default) and stays depleted while you keep casting there, because
+  denied catches still add pressure — so you must aim somewhere new.
+- **If you fish slower than the spot recovers**, the equilibrium stays under the
+  cap and the spot never depletes. This is the key tuning relationship: a **lower
+  `pressure-cap`** (or longer half-life) makes the mechanic trigger sooner *and*
+  stay sensitive at slower fishing speeds. With the defaults it trips for normal
+  fishing but lets very slow/occasional fishing through.
 
 This fixes every mcMMO weakness: **many** cells are tracked (alternation gains
 nothing), grid bucketing is jitter-proof and drift-proof, and the time decay
@@ -67,11 +71,11 @@ updates won't break it.
 | Key | Default | Meaning |
 | --- | --- | --- |
 | `enabled` | `true` | Master switch. |
-| `cell-size` | `8` | Grid cell edge in blocks (size of "one spot"). |
-| `pressure-cap` | `10.0` | Pressure at which a cell becomes depleted. |
-| `resume-threshold` | `6.0` | Recover below this to start catching again (hysteresis). |
+| `cell-size` | `6` | Grid cell edge in blocks (size of "one spot"). |
+| `pressure-cap` | `5.0` | Pressure at which a cell becomes depleted (≈ catches before it dries). |
+| `resume-threshold` | `2.0` | Recover below this to start catching again (hysteresis). |
 | `gain-per-catch` | `1.0` | Pressure added per catch. |
-| `recovery-half-life-seconds` | `180` | Seconds for pressure to halve. |
+| `recovery-half-life-seconds` | `120` | Seconds for pressure to halve (≈2–3 min to recover a dried spot). |
 | `notify-player` | `true` | Action-bar message on a denied catch. |
 | `sweep-interval-seconds` | `120` | Background decay/eviction interval. |
 
