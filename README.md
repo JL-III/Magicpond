@@ -23,10 +23,19 @@ mvn -Prun verify        # build, then download/boot Paper with the plugin
 # or, equivalently:
 bash scripts/run-server.sh
 ```
-On first run the script downloads the matching Paper build into a gitignored
-`run/` directory, copies the plugin into `run/plugins/`, accepts the EULA, and
-starts an interactive server console (type `stop` or press Ctrl+C to quit).
-Rebuild-and-rerun reinstalls the latest jar automatically; delete `run/` for a
-clean slate. Override the version with `PAPER_VERSION=1.21.4 bash scripts/run-server.sh`.
+On first run the script downloads the requested Paper build (via the PaperMC
+Fill v3 API) into a gitignored `run/` directory, copies the plugin into
+`run/plugins/`, accepts the EULA, and starts an interactive server console (type
+`stop` or press Ctrl+C to quit). Rebuild-and-rerun reinstalls the latest jar
+automatically; delete `run/` for a clean slate.
 
-> Requires `bash`, `curl`, and a JDK on your PATH. On Windows use WSL or Git Bash.
+The server version/build is pinned in `pom.xml` (`paper.run.version` /
+`paper.run.build`, default **26.1.2 build 69**) and overridable per-run:
+```
+PAPER_VERSION=26.1.2 PAPER_BUILD=69 bash scripts/run-server.sh   # exact build
+PAPER_VERSION=26.1.2-69 bash scripts/run-server.sh               # combined form
+PAPER_BUILD= PAPER_VERSION=26.1.2 bash scripts/run-server.sh     # latest build
+```
+
+> Requires `bash`, `curl`, and a JDK on your PATH (`jq` optional but recommended).
+> On Windows use WSL or Git Bash.

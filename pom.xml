@@ -14,8 +14,11 @@
     <properties>
         <java.version>17</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <!-- Minecraft/Paper version used for both the compile API and the test server. -->
+        <!-- Minecraft/Paper version used for the compile API. -->
         <paper.version>1.21.1</paper.version>
+        <!-- Version + build of the Paper jar the test server (`mvn -Prun verify`) downloads. -->
+        <paper.run.version>26.1.2</paper.run.version>
+        <paper.run.build>69</paper.run.build>
     </properties>
 
     <build>
@@ -106,7 +109,8 @@
                                     </arguments>
                                     <environmentVariables>
                                         <SKIP_BUILD>true</SKIP_BUILD>
-                                        <PAPER_VERSION>${paper.version}</PAPER_VERSION>
+                                        <PAPER_VERSION>${paper.run.version}</PAPER_VERSION>
+                                        <PAPER_BUILD>${paper.run.build}</PAPER_BUILD>
                                     </environmentVariables>
                                 </configuration>
                             </execution>
