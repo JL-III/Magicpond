@@ -1,0 +1,69 @@
+# ---------------------------------------------------------------------------
+# Magicpond configuration
+# ---------------------------------------------------------------------------
+# The overfishing system tracks where each player's hook lands on a grid of
+# cells. Every catch adds "pressure" to that cell; pressure decays over time.
+# Fish a spot too fast for too long and its pressure passes the cap, after
+# which catches there are denied (no fish) until it recovers.
+#
+# This replaces mcMMO's single-slot "last cast" anti-exploit, which is bypassed
+# by simply alternating between two fishing spots. Here every cell is tracked
+# independently, so alternation no longer helps.
+overfishing:
+  # Master switch for the whole system.
+  enabled: true
+
+  # Edge length, in blocks, of a grid cell. Hooks landing in the same cell
+  # share one pressure pool. Bigger = a wider area counts as "one spot";
+  # smaller = aiming your cast a few blocks over counts as a fresh spot.
+  cell-size: 6
+
+  # Pressure at which a cell becomes depleted. With gain-per-catch = 1.0 this is
+  # roughly "how many catches in one spot before fish stop biting" (~5-6 here).
+  # NOTE: this is the main sensitivity lever. Pressure also decays (below), so a
+  # cell only depletes if you fish it faster than it recovers; a LOWER cap makes
+  # the mechanic both trigger sooner and stay sensitive at slower fishing speeds.
+  pressure-cap: 5.0
+
+  # A depleted cell only gives fish again once its pressure decays below this.
+  # Keep it well under pressure-cap so a fished-out spot stays dead long enough
+  # to push the player to move on (hysteresis, no flickering at the boundary).
+  resume-threshold: 2.0
+
+  # Pressure at which the player starts getting a "thinning out" warning, before
+  # the spot is fully depleted, so it isn't a surprise. Keep below pressure-cap;
+  # set equal to pressure-cap to disable the warning.
+  warn-threshold: 3.0
+
+  # Pressure added per fish caught (applied even to denied catches, so an
+  # autofisher hammering a depleted spot keeps it depleted).
+  gain-per-catch: 1.0
+
+  # Time, in seconds, for a cell's pressure to halve. This controls BOTH how
+  # reliably depletion triggers (longer = more sensitive) and how long a dried
+  # spot takes to recover (longer = lingers). At 120s a fished-out spot comes
+  # back in ~2-3 minutes, while normal-speed fishing still trips the cap.
+  recovery-half-life-seconds: 120
+
+  # What a depleted spot yields instead of fish (one is picked at random). These
+  # are vanilla fishing "junk" items by default. Leave the list empty to cancel
+  # the catch entirely (no item at all) instead of dropping junk.
+  garbage-items:
+    - LEATHER_BOOTS
+    - LEATHER
+    - BONE
+    - STRING
+    - BOWL
+    - STICK
+    - INK_SAC
+    - ROTTEN_FLESH
+    - LILY_PAD
+    - BAMBOO
+
+  # Send the player action-bar messages (the "thinning out" warning and the
+  # "overfished" notice). Turn off for silent operation.
+  notify-player: true
+
+  # How often (seconds) the background sweep decays and evicts recovered cells
+  # to keep memory bounded. Changing this reschedules the task on reload.
+  sweep-interval-seconds: 120

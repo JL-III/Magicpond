@@ -2,5 +2,14 @@ name: Magicpond
 version: '${project.version}'
 main: com.playtheatria.jliii.magicpond.Magicpond
 api-version: 1.19
-depend: [mcMMO]
 load: POSTWORLD
+commands:
+  magicpond:
+    description: Magicpond admin and overfishing debugging commands.
+    aliases: [mpond]
+    usage: /magicpond <info|check|clear|reload>
+    permission: magicpond.admin
+permissions:
+  magicpond.admin:
+    description: Access to Magicpond admin commands.
+    default: op

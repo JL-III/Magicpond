@@ -14,6 +14,11 @@
     <properties>
         <java.version>17</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <!-- Minecraft/Paper version used for the compile API. -->
+        <paper.version>1.21.1</paper.version>
+        <!-- Version + build of the Paper jar the test server (`mvn -Prun verify`) downloads. -->
+        <paper.run.version>26.1.2</paper.run.version>
+        <paper.run.build>69</paper.run.build>
     </properties>
 
     <build>
@@ -55,22 +60,11 @@
     <repositories>
         <repository>
             <id>papermc-repo</id>
-            <url>https://papermc.io/repo/repository/maven-public/</url>
+            <url>https://repo.papermc.io/repository/maven-public/</url>
         </repository>
         <repository>
             <id>sonatype</id>
             <url>https://oss.sonatype.org/content/groups/public/</url>
-        </repository>
-        <repository>
-            <id>github</id>
-            <url>https://maven.pkg.github.com/JL-III/mcMMO</url>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </repository>
-        <repository>
-            <id>mcmmo-repo</id>
-            <url>https://nexus.neetgames.com/repository/maven-public</url>
         </repository>
     </repositories>
 
@@ -78,14 +72,53 @@
         <dependency>
             <groupId>io.papermc.paper</groupId>
             <artifactId>paper-api</artifactId>
-            <version>1.21.1-R0.1-SNAPSHOT</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.gmail.nossr50.mcMMO</groupId>
-            <artifactId>mcMMO</artifactId>
-            <version>2.2.029</version>
+            <version>${paper.version}-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>
+
+    <profiles>
+        <!--
+            Launch a local Paper test server with this plugin installed:
+
+                mvn -Prun verify       (builds the plugin, then boots the server)
+
+            The heavy lifting (download Paper, install the jar, accept the EULA,
+            start the server) lives in scripts/run-server.sh. SKIP_BUILD=true is
+            passed because the `verify` phase already produced the jar.
+        -->
+        <profile>
+            <id>run</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <version>3.1.0</version>
+                        <executions>
+                            <execution>
+                                <id>run-server</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <executable>bash</executable>
+                                    <arguments>
+                                        <argument>${project.basedir}/scripts/run-server.sh</argument>
+                                    </arguments>
+                                    <environmentVariables>
+                                        <SKIP_BUILD>true</SKIP_BUILD>
+                                        <PAPER_VERSION>${paper.run.version}</PAPER_VERSION>
+                                        <PAPER_BUILD>${paper.run.build}</PAPER_BUILD>
+                                        <PLUGIN_ARTIFACT>${project.artifactId}</PLUGIN_ARTIFACT>
+                                    </environmentVariables>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>
