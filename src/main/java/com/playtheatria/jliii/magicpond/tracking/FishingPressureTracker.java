@@ -37,15 +37,16 @@ public class FishingPressureTracker {
     }
 
     /**
-     * Records a catch attempt in a cell and decides whether it is allowed.
+     * Records a catch attempt in a cell and decides the outcome.
      * <p>
-     * The decision is made on the pressure accumulated <em>before</em> this catch, then
-     * the catch adds its own pressure regardless of the outcome — so an autofisher who
-     * keeps casting into a depleted spot keeps it pinned high and continues to get nothing.
+     * The allow/deny decision is made on the pressure accumulated <em>before</em> this catch,
+     * then the catch adds its own pressure regardless of the outcome — so an autofisher who
+     * keeps casting into a depleted spot keeps it pinned high and continues to get junk.
      *
-     * @return {@code true} if the player may keep the fish, {@code false} if the spot is depleted.
+     * @return {@link CatchOutcome#DEPLETED} if the spot is fished out, {@link CatchOutcome#WARNING}
+     *         if it is thinning out (past the warn threshold), otherwise {@link CatchOutcome#ALLOWED}.
      */
-    public boolean recordCatch(UUID playerId, CellKey key) {
+    public CatchOutcome recordCatch(UUID playerId, CellKey key) {
         long now = System.currentTimeMillis();
         FishingSpot spot = data.computeIfAbsent(playerId, id -> new HashMap<>())
                 .computeIfAbsent(key, k -> new FishingSpot(now));
@@ -69,7 +70,21 @@ public class FishingPressureTracker {
 
         spot.pressure += settings.gainPerCatch();
         spot.lastUpdate = now;
-        return allowed;
+
+        if (!allowed) {
+            return CatchOutcome.DEPLETED;
+        }
+        return spot.pressure >= settings.warnThreshold() ? CatchOutcome.WARNING : CatchOutcome.ALLOWED;
+    }
+
+    /** Whether the given player's cell is currently flagged depleted (read-only, no decay). */
+    public boolean isDepleted(UUID playerId, CellKey key) {
+        Map<CellKey, FishingSpot> spots = data.get(playerId);
+        if (spots == null) {
+            return false;
+        }
+        FishingSpot spot = spots.get(key);
+        return spot != null && spot.depleted;
     }
 
     /**

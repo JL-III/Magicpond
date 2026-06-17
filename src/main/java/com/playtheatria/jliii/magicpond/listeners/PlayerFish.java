@@ -1,6 +1,8 @@
 package com.playtheatria.jliii.magicpond.listeners;
 
 import com.playtheatria.jliii.magicpond.Magicpond;
+import com.playtheatria.jliii.magicpond.config.Settings;
+import com.playtheatria.jliii.magicpond.tracking.FishingPressureTracker;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -19,16 +21,28 @@ public class PlayerFish implements Listener {
 
     private final List<Location> pondLocation;
     private final Magicpond magicpond;
+    private final FishingPressureTracker tracker;
+    private final Settings settings;
 
-    public PlayerFish(List<Location> location, Magicpond magicpond) {
+    public PlayerFish(List<Location> location, Magicpond magicpond, FishingPressureTracker tracker, Settings settings) {
         this.pondLocation = location;
         this.magicpond = magicpond;
+        this.tracker = tracker;
+        this.settings = settings;
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void OnFishEvent(PlayerFishEvent event) {
         if (event.getCaught() == null || event.getState() != PlayerFishEvent.State.CAUGHT_FISH) return;
-        if (!pondLocation.contains(event.getHook().getLocation().getBlock().getLocation())) return;
+        Location hook = event.getHook().getLocation();
+        if (!pondLocation.contains(hook.getBlock().getLocation())) return;
+
+        // No bonus on an overfished spot — the player reeled in junk, not a fish.
+        if (settings.enabled()
+                && !event.getPlayer().hasPermission("magicpond.bypass")
+                && tracker.isDepleted(event.getPlayer().getUniqueId(), tracker.cellOf(hook))) {
+            return;
+        }
 
         World world = event.getPlayer().getWorld();
         Item caughtItem = (Item) event.getCaught();

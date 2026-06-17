@@ -37,5 +37,9 @@ PAPER_VERSION=26.1.2-69 bash scripts/run-server.sh               # combined form
 PAPER_BUILD= PAPER_VERSION=26.1.2 bash scripts/run-server.sh     # latest build
 ```
 
+`scripts/run-server.sh` is project-agnostic — copy it (and the `run` profile from
+`pom.xml`) into any Maven-based Paper plugin and it auto-detects the built jar
+from the project's `artifactId`; nothing in it is specific to Magicpond.
+
 > Requires `bash`, `curl`, and a JDK on your PATH (`jq` optional but recommended).
 > On Windows use WSL or Git Bash.

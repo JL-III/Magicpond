@@ -111,6 +111,7 @@
                                         <SKIP_BUILD>true</SKIP_BUILD>
                                         <PAPER_VERSION>${paper.run.version}</PAPER_VERSION>
                                         <PAPER_BUILD>${paper.run.build}</PAPER_BUILD>
+                                        <PLUGIN_ARTIFACT>${project.artifactId}</PLUGIN_ARTIFACT>
                                     </environmentVariables>
                                 </configuration>
                             </execution>

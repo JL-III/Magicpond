@@ -7,20 +7,27 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerFishEvent;
+import org.bukkit.inventory.ItemStack;
+
+import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
- * Denies fish catches in cells that have been over-fished.
- * <p>
- * Runs at {@link EventPriority#LOWEST} so that cancelling the event suppresses the whole
- * downstream reward chain. In particular the Magicpond bonus listener runs later with
- * {@code ignoreCancelled = true}, so a depleted catch yields no vanilla fish <em>and</em>
- * no pond bonus &mdash; this is what lets the magic pond run safely without mcMMO's
- * exploit check. Purely Bukkit/Paper API: {@link PlayerFishEvent} + {@code FishHook#getLocation()}.
+ * Applies the overfishing mechanic to caught fish.
+ * <ul>
+ *   <li><b>Thinning out</b> — warns the player so depletion isn't a surprise.</li>
+ *   <li><b>Depleted</b> — turns the catch into junk (configurable) and tells the player to
+ *       move on; if no junk items are configured, cancels the catch instead.</li>
+ * </ul>
+ * Runs at {@link EventPriority#LOWEST} so the depletion decision is made before the Magicpond
+ * bonus listener (MONITOR) and any other reward handlers. Purely Bukkit/Paper API.
  */
 public class OverfishingListener implements Listener {
 
@@ -45,16 +52,30 @@ public class OverfishingListener implements Listener {
         if (player.hasPermission("magicpond.bypass")) return;
 
         CellKey key = tracker.cellOf(hook);
-        boolean allowed = tracker.recordCatch(player.getUniqueId(), key);
-        if (allowed) return;
-
-        event.setCancelled(true);
-        if (settings.notifyPlayer()) {
-            player.sendActionBar(
-                    Component.text("The fish here have been overfished — try a new spot.")
-                            .color(NamedTextColor.RED)
-                            .decorate(TextDecoration.ITALIC)
-            );
+        switch (tracker.recordCatch(player.getUniqueId(), key)) {
+            case ALLOWED -> { /* plenty of fish; nothing to do */ }
+            case WARNING -> notify(player,
+                    "The fish here are thinning out — find a fresh spot soon.", NamedTextColor.GOLD);
+            case DEPLETED -> deplete(event, player);
         }
+    }
+
+    private void deplete(PlayerFishEvent event, Player player) {
+        List<Material> garbage = settings.garbageItems();
+        if (!garbage.isEmpty() && event.getCaught() instanceof Item caught) {
+            // Swap the reeled-in fish for a random piece of junk; no XP for overfishing.
+            Material junk = garbage.get(ThreadLocalRandom.current().nextInt(garbage.size()));
+            caught.setItemStack(new ItemStack(junk));
+            event.setExpToDrop(0);
+        } else {
+            // No junk configured (or nothing to swap): deny the catch outright.
+            event.setCancelled(true);
+        }
+        notify(player, "Overfished here — move to a new spot for better catches.", NamedTextColor.RED);
+    }
+
+    private void notify(Player player, String message, NamedTextColor color) {
+        if (!settings.notifyPlayer()) return;
+        player.sendActionBar(Component.text(message).color(color).decorate(TextDecoration.ITALIC));
     }
 }

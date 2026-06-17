@@ -53,6 +53,7 @@ public class MagicpondCommand implements CommandExecutor {
                 send(sender, "Overfishing: " + (settings.enabled() ? "enabled" : "disabled")
                         + " | cell-size=" + settings.cellSize()
                         + " | cap=" + settings.pressureCap()
+                        + " | warn=" + settings.warnThreshold()
                         + " | resume=" + settings.resumeThreshold()
                         + " | gain=" + settings.gainPerCatch()
                         + " | half-life=" + settings.recoveryHalfLifeSeconds() + "s"

@@ -41,9 +41,17 @@ on catch in cell C:
     else:
         allowed = C.pressure < pressure-cap
         C.depleted = !allowed
-    C.pressure += gain-per-catch       # added even when denied
-    if !allowed: cancel the catch (no fish) + notify
+    C.pressure += gain-per-catch       # added even when depleted
+    if depleted:   replace the catch with junk (or cancel) + "overfished" notice
+    elif warning:  let the fish through + "thinning out" warning
 ```
+
+**Player feedback:** the player isn't blindsided. Once pressure passes
+`warn-threshold` they get a "thinning out" action-bar warning while still
+catching fish; once the spot is depleted, the catch is swapped for a random junk
+item (`garbage-items`, e.g. leather boots) with an "overfished — move on" notice,
+rather than silently failing. Set `garbage-items` to an empty list to cancel the
+catch outright instead.
 
 Because pressure **decays exponentially**, the rate of fishing decides the
 outcome. Steady fishing settles at an equilibrium of
@@ -74,9 +82,11 @@ updates won't break it.
 | `cell-size` | `6` | Grid cell edge in blocks (size of "one spot"). |
 | `pressure-cap` | `5.0` | Pressure at which a cell becomes depleted (≈ catches before it dries). |
 | `resume-threshold` | `2.0` | Recover below this to start catching again (hysteresis). |
+| `warn-threshold` | `3.0` | Pressure at which the "thinning out" warning starts (set = cap to disable). |
 | `gain-per-catch` | `1.0` | Pressure added per catch. |
 | `recovery-half-life-seconds` | `120` | Seconds for pressure to halve (≈2–3 min to recover a dried spot). |
-| `notify-player` | `true` | Action-bar message on a denied catch. |
+| `garbage-items` | leather boots, … | Junk a depleted spot yields (random pick); empty = cancel the catch. |
+| `notify-player` | `true` | Action-bar warning + overfished notices. |
 | `sweep-interval-seconds` | `120` | Background decay/eviction interval. |
 
 ## Tuning quickly
@@ -113,11 +123,12 @@ movement-based idea below.
 
 ## Verifying in-game
 
-1. Set low test values, e.g. `pressure-cap: 3`, `recovery-half-life-seconds: 20`.
-2. `/magicpond reload`, then fish one spot — after ~3 catches the action bar
-   should report depletion and catches stop.
+1. Set low test values, e.g. `pressure-cap: 3`, `warn-threshold: 2`,
+   `recovery-half-life-seconds: 20`.
+2. `/magicpond reload`, then fish one spot — you should see the "thinning out"
+   warning, then start reeling in junk with the "overfished" notice.
 3. `/magicpond check` shows pressure climbing and the `[DEPLETED]` flag.
-4. Wait for pressure to decay below `resume-threshold`; catches resume.
+4. Wait for pressure to decay below `resume-threshold`; real catches resume.
 5. Confirm a second spot (a cell away) is unaffected while the first is depleted
    — the alternation bypass that defeats mcMMO no longer works.
 
@@ -126,9 +137,9 @@ movement-based idea below.
 - State is in-memory (like mcMMO's), so it resets on restart and is **not**
   reset by relogging (no relog-to-clear exploit). Persisting to disk or a
   `PersistentDataContainer` is a straightforward follow-up if needed.
-- Currently depletion is binary (catch or no catch). A "diminishing returns"
-  variant could instead scale `event.setExpToDrop(...)` / reward chance with
-  pressure for a softer feel.
+- A depleted spot now yields junk (or cancels) rather than failing silently. A
+  further "diminishing returns" variant could scale reward *quality* with
+  pressure (e.g. fewer treasure rolls as a spot thins) for an even softer feel.
 - **Movement-based AFK signal (recommended next step):** also track the player's
   position + look direction (yaw/pitch) between catches. An auto-clicker holds
   the same spot and angle for hundreds of catches; a human inevitably shifts.

@@ -27,7 +27,7 @@ public final class Magicpond extends JavaPlugin {
         List<Location> pondLocations = ListGenerators.loadMagicPondLocations();
         tracker = new FishingPressureTracker(settings);
 
-        getServer().getPluginManager().registerEvents(new PlayerFish(pondLocations, this), this);
+        getServer().getPluginManager().registerEvents(new PlayerFish(pondLocations, this, tracker, settings), this);
         getServer().getPluginManager().registerEvents(new OverfishingListener(tracker, settings), this);
 
         PluginCommand command = getCommand("magicpond");

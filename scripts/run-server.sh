@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 #
-# Build Magicpond and launch a local Paper test server with the plugin installed.
+# Build a Paper plugin and launch a local test server with it installed.
+#
+# Project-agnostic: drop this into any Maven-based Paper plugin's scripts/ folder.
+# It auto-detects the built plugin jar, so nothing here is project-specific.
 #
 # Usage:
 #   bash scripts/run-server.sh          # build the plugin, then start the server
@@ -9,21 +12,23 @@
 # Everything lives in a gitignored ./run directory, so it's safe to delete to
 # get a clean server. Each Paper build is cached there and only downloaded once.
 #
-# Configurable via environment variables:
-#   PAPER_VERSION   Paper/Minecraft version           (default: 26.1.2)
-#                   May also be given as "<version>-<build>", e.g. 26.1.2-69.
-#   PAPER_BUILD     Exact build number to pin          (default: 69; empty = latest)
-#   PAPER_API       Downloads API base URL            (default: https://fill.papermc.io/v3)
-#   RUN_DIR         Working directory for the server   (default: run)
-#   SKIP_BUILD      Set to "true" to skip `mvn package` (default: false)
-#   JAVA_OPTS       Extra JVM flags                    (default: -Xms1G -Xmx2G)
-#   MVN             Maven executable                   (default: mvn)
+# Configurable via environment variables (or the Maven `run` profile in pom.xml):
+#   PAPER_VERSION    Paper/Minecraft version            (default: 26.1.2)
+#                    May also be given as "<version>-<build>", e.g. 26.1.2-69.
+#   PAPER_BUILD      Exact build number to pin          (default: empty = latest)
+#   PAPER_API        Downloads API base URL            (default: https://fill.papermc.io/v3)
+#   PLUGIN_ARTIFACT  Maven artifactId (jar to install)  (default: auto-detected)
+#   RUN_DIR          Working directory for the server   (default: run)
+#   SKIP_BUILD       Set to "true" to skip `mvn package` (default: false)
+#   JAVA_OPTS        Extra JVM flags                    (default: -Xms1G -Xmx2G)
+#   MVN              Maven executable                   (default: mvn)
 #
 set -euo pipefail
 
 PAPER_VERSION="${PAPER_VERSION:-26.1.2}"
-PAPER_BUILD="${PAPER_BUILD:-69}"
+PAPER_BUILD="${PAPER_BUILD:-}"
 PAPER_API="${PAPER_API:-https://fill.papermc.io/v3}"
+PLUGIN_ARTIFACT="${PLUGIN_ARTIFACT:-}"
 RUN_DIR="${RUN_DIR:-run}"
 SKIP_BUILD="${SKIP_BUILD:-false}"
 JAVA_OPTS="${JAVA_OPTS:--Xms1G -Xmx2G}"
@@ -34,6 +39,8 @@ if [ -z "$PAPER_BUILD" ] && [[ "$PAPER_VERSION" =~ ^(.+)-([0-9]+)$ ]]; then
   PAPER_VERSION="${BASH_REMATCH[1]}"
   PAPER_BUILD="${BASH_REMATCH[2]}"
 fi
+# Ignore a non-numeric build (e.g. an unresolved Maven property) -> resolve latest.
+[[ "$PAPER_BUILD" =~ ^[0-9]+$ ]] || PAPER_BUILD=""
 
 # Resolve the project root (this script lives in <root>/scripts).
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -48,8 +55,20 @@ if [ "$SKIP_BUILD" != "true" ]; then
   "$MVN" -q -DskipTests package
 fi
 
+# Identify the plugin's Maven artifactId so we install the right jar and can
+# replace older copies. Prefer the env hint (set by the Maven run profile), then
+# ask Maven, and sanity-check the result.
+if [ -z "$PLUGIN_ARTIFACT" ]; then
+  PLUGIN_ARTIFACT="$("$MVN" -q -DforceStdout help:evaluate -Dexpression=project.artifactId 2>/dev/null | tail -n1 || true)"
+fi
+[[ "$PLUGIN_ARTIFACT" =~ ^[A-Za-z0-9._-]+$ ]] || PLUGIN_ARTIFACT=""
+
 # Locate the built plugin jar (skip the shade plugin's original-/sources/javadoc jars).
-PLUGIN_JAR="$(ls -t target/*.jar 2>/dev/null | grep -Ev 'original-|-sources|-javadoc' | head -n1 || true)"
+if [ -n "$PLUGIN_ARTIFACT" ]; then
+  PLUGIN_JAR="$(ls -t target/"$PLUGIN_ARTIFACT"-*.jar 2>/dev/null | grep -Ev 'original-|-sources|-javadoc' | head -n1 || true)"
+else
+  PLUGIN_JAR="$(ls -t target/*.jar 2>/dev/null | grep -Ev 'original-|-sources|-javadoc' | head -n1 || true)"
+fi
 if [ -z "$PLUGIN_JAR" ]; then
   echo "[run] ERROR: no plugin jar found in target/. Did the build succeed?" >&2
   exit 1
@@ -62,7 +81,7 @@ mkdir -p "$RUN_DIR/plugins"
 BUILDS_JSON=""
 fetch_builds() {
   [ -n "$BUILDS_JSON" ] && return 0
-  BUILDS_JSON="$(curl -fsSL -H 'User-Agent: magicpond-run-script' \
+  BUILDS_JSON="$(curl -fsSL -H 'User-Agent: paper-run-script' \
     "$PAPER_API/projects/paper/versions/$PAPER_VERSION/builds")" \
     || { echo "[run] ERROR: failed to query $PAPER_API/projects/paper/versions/$PAPER_VERSION/builds" >&2; return 1; }
 }
@@ -118,14 +137,16 @@ if [ -z "$PAPER_JAR" ] || [ ! -f "$PAPER_JAR" ]; then
       exit 1
     fi
     echo "[run] Downloading Paper $PAPER_VERSION build $PAPER_BUILD ..."
-    curl -fsSL -H 'User-Agent: magicpond-run-script' -o "$PAPER_JAR" "$DL_URL"
+    curl -fsSL -H 'User-Agent: paper-run-script' -o "$PAPER_JAR" "$DL_URL"
   fi
 fi
 PAPER_JAR_NAME="$(basename "$PAPER_JAR")"
 
 # 3. Install the freshly built plugin (replacing any older copy) and accept the EULA.
 echo "[run] Installing $(basename "$PLUGIN_JAR") into $RUN_DIR/plugins/"
-rm -f "$RUN_DIR"/plugins/[Mm]agicpond-*.jar
+if [ -n "$PLUGIN_ARTIFACT" ]; then
+  rm -f "$RUN_DIR"/plugins/"$PLUGIN_ARTIFACT"-*.jar "$RUN_DIR"/plugins/"$PLUGIN_ARTIFACT".jar
+fi
 cp "$PLUGIN_JAR" "$RUN_DIR/plugins/"
 echo "eula=true" > "$RUN_DIR/eula.txt"
 
@@ -134,7 +155,7 @@ if [ ! -f "$RUN_DIR/server.properties" ]; then
   cat > "$RUN_DIR/server.properties" <<EOF
 # Generated by scripts/run-server.sh for local plugin testing.
 online-mode=false
-motd=Magicpond dev server
+motd=Paper dev server
 max-players=5
 spawn-protection=0
 EOF

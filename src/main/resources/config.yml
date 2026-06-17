@@ -30,6 +30,11 @@ overfishing:
   # to push the player to move on (hysteresis, no flickering at the boundary).
   resume-threshold: 2.0
 
+  # Pressure at which the player starts getting a "thinning out" warning, before
+  # the spot is fully depleted, so it isn't a surprise. Keep below pressure-cap;
+  # set equal to pressure-cap to disable the warning.
+  warn-threshold: 3.0
+
   # Pressure added per fish caught (applied even to denied catches, so an
   # autofisher hammering a depleted spot keeps it depleted).
   gain-per-catch: 1.0
@@ -40,7 +45,23 @@ overfishing:
   # back in ~2-3 minutes, while normal-speed fishing still trips the cap.
   recovery-half-life-seconds: 120
 
-  # Send the player an action-bar message when a catch is denied.
+  # What a depleted spot yields instead of fish (one is picked at random). These
+  # are vanilla fishing "junk" items by default. Leave the list empty to cancel
+  # the catch entirely (no item at all) instead of dropping junk.
+  garbage-items:
+    - LEATHER_BOOTS
+    - LEATHER
+    - BONE
+    - STRING
+    - BOWL
+    - STICK
+    - INK_SAC
+    - ROTTEN_FLESH
+    - LILY_PAD
+    - BAMBOO
+
+  # Send the player action-bar messages (the "thinning out" warning and the
+  # "overfished" notice). Turn off for silent operation.
   notify-player: true
 
   # How often (seconds) the background sweep decays and evicts recovered cells
