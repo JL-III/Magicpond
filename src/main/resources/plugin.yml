@@ -7,7 +7,7 @@ commands:
   magicpond:
     description: Magicpond admin and overfishing debugging commands.
     aliases: [mpond]
-    usage: /magicpond <info|check|clear|reload>
+    usage: /magicpond <set|unset|list|info|check|clear|reload>
     permission: magicpond.admin
 permissions:
   magicpond.admin:

@@ -1,6 +1,10 @@
 # Magicpond
 A quick side project to encourage players to fish in one place on the server.
-Players receive bonus fish for fishing in a specific location on the server.
+Players receive bonus fish for fishing in a designated magic pond.
+
+Magic ponds are designated per-chunk in-game: stand in the chunk and run
+`/magicpond set` (`/magicpond unset` to remove, `/magicpond list` to review).
+Designations persist in `ponds.yml` in the plugin's data folder.
 
 It also includes an **overfishing** system that deters autofishing: a player who
 fishes one spot too frequently for too long stops catching fish there until the

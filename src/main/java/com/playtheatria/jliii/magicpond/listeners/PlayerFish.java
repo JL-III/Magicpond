@@ -2,6 +2,7 @@ package com.playtheatria.jliii.magicpond.listeners;
 
 import com.playtheatria.jliii.magicpond.Magicpond;
 import com.playtheatria.jliii.magicpond.config.Settings;
+import com.playtheatria.jliii.magicpond.pond.PondManager;
 import com.playtheatria.jliii.magicpond.tracking.FishingPressureTracker;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -15,17 +16,15 @@ import org.bukkit.event.player.PlayerFishEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import java.util.List;
-
 public class PlayerFish implements Listener {
 
-    private final List<Location> pondLocation;
+    private final PondManager ponds;
     private final Magicpond magicpond;
     private final FishingPressureTracker tracker;
     private final Settings settings;
 
-    public PlayerFish(List<Location> location, Magicpond magicpond, FishingPressureTracker tracker, Settings settings) {
-        this.pondLocation = location;
+    public PlayerFish(PondManager ponds, Magicpond magicpond, FishingPressureTracker tracker, Settings settings) {
+        this.ponds = ponds;
         this.magicpond = magicpond;
         this.tracker = tracker;
         this.settings = settings;
@@ -35,7 +34,7 @@ public class PlayerFish implements Listener {
     public void OnFishEvent(PlayerFishEvent event) {
         if (event.getCaught() == null || event.getState() != PlayerFishEvent.State.CAUGHT_FISH) return;
         Location hook = event.getHook().getLocation();
-        if (!pondLocation.contains(hook.getBlock().getLocation())) return;
+        if (!ponds.isPond(hook)) return;
 
         // No bonus on an overfished spot — the player reeled in junk, not a fish.
         if (settings.enabled()
