@@ -1,6 +1,8 @@
 # Magicpond
 A quick side project to encourage players to fish in one place on the server.
-Players receive bonus fish for fishing in a designated magic pond.
+A magic pond always yields fish (vanilla junk/treasure are converted to fish) plus
+a bonus fish per catch — unless the spot is overfished, in which case it yields
+junk like anywhere else until it recovers.
 
 Magic ponds are designated per-chunk in-game: stand in the chunk and run
 `/magicpond set` (`/magicpond unset` to remove, `/magicpond list` to review).
