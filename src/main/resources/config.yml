@@ -1,0 +1,47 @@
+# ---------------------------------------------------------------------------
+# Magicpond configuration
+# ---------------------------------------------------------------------------
+# The overfishing system tracks where each player's hook lands on a grid of
+# cells. Every catch adds "pressure" to that cell; pressure decays over time.
+# Fish a spot too fast for too long and its pressure passes the cap, after
+# which catches there are denied (no fish) until it recovers.
+#
+# This replaces mcMMO's single-slot "last cast" anti-exploit, which is bypassed
+# by simply alternating between two fishing spots. Here every cell is tracked
+# independently, so alternation no longer helps.
+overfishing:
+  # Master switch for the whole system.
+  enabled: true
+
+  # Edge length, in blocks, of a grid cell. Hooks landing in the same cell
+  # share one pressure pool. Bigger = a wider area counts as "one spot".
+  cell-size: 8
+
+  # Pressure at which a cell becomes depleted. With gain-per-catch = 1.0 this is
+  # roughly "how many rapid catches in one spot before fish stop biting".
+  pressure-cap: 10.0
+
+  # A depleted cell only starts giving fish again once its pressure decays below
+  # this value. Keep it below pressure-cap to avoid flickering at the boundary.
+  resume-threshold: 6.0
+
+  # Pressure added per fish caught (applied even to denied catches, so an
+  # autofisher hammering a depleted spot keeps it depleted).
+  gain-per-catch: 1.0
+
+  # Time, in seconds, for a cell's pressure to halve. Lower = spots recover
+  # faster (more forgiving); higher = depletion lingers longer.
+  # Casual fishing settles at a low pressure and never trips the cap; only
+  # sustained rapid fishing climbs past it.
+  recovery-half-life-seconds: 180
+
+  # Magic ponds are designed reward spots; leave them out of depletion so the
+  # existing bonus-fish feature keeps working. Set false to deplete them too.
+  exempt-magic-pond: true
+
+  # Send the player an action-bar message when a catch is denied.
+  notify-player: true
+
+  # How often (seconds) the background sweep decays and evicts recovered cells
+  # to keep memory bounded. Changing this reschedules the task on reload.
+  sweep-interval-seconds: 120
