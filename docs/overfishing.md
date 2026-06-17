@@ -114,6 +114,9 @@ movement-based idea below.
 
 ## Commands & permissions
 
+- `/magicpond set` — designate the chunk you're standing in as a magic pond.
+- `/magicpond unset` — remove the magic-pond designation from your chunk.
+- `/magicpond list` — list designated pond chunks.
 - `/magicpond info` — current settings + tracked-player count.
 - `/magicpond check` — pressure of the cell you're standing in.
 - `/magicpond clear` — wipe all tracked pressure.

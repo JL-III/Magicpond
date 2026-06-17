@@ -2,19 +2,24 @@ package com.playtheatria.jliii.magicpond.commands;
 
 import com.playtheatria.jliii.magicpond.Magicpond;
 import com.playtheatria.jliii.magicpond.config.Settings;
+import com.playtheatria.jliii.magicpond.pond.PondManager;
 import com.playtheatria.jliii.magicpond.tracking.CellKey;
 import com.playtheatria.jliii.magicpond.tracking.FishingPressureTracker;
 import com.playtheatria.jliii.magicpond.tracking.FishingSpot;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import org.bukkit.Chunk;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 /**
- * Admin / debugging entry point for tuning and verifying the overfishing system.
+ * Admin / debugging entry point for the magic pond and overfishing system.
  * <ul>
+ *   <li>{@code /magicpond set} – mark the chunk you're standing in as a magic pond.</li>
+ *   <li>{@code /magicpond unset} – remove the magic-pond designation from your chunk.</li>
+ *   <li>{@code /magicpond list} – list designated pond chunks.</li>
  *   <li>{@code /magicpond info} – summary of current settings and tracked players.</li>
  *   <li>{@code /magicpond check} – pressure of the cell you are standing in.</li>
  *   <li>{@code /magicpond clear} – wipe all tracked fishing pressure.</li>
@@ -26,11 +31,13 @@ public class MagicpondCommand implements CommandExecutor {
     private final Magicpond plugin;
     private final FishingPressureTracker tracker;
     private final Settings settings;
+    private final PondManager ponds;
 
-    public MagicpondCommand(Magicpond plugin, FishingPressureTracker tracker, Settings settings) {
+    public MagicpondCommand(Magicpond plugin, FishingPressureTracker tracker, Settings settings, PondManager ponds) {
         this.plugin = plugin;
         this.tracker = tracker;
         this.settings = settings;
+        this.ponds = ponds;
     }
 
     @Override
@@ -41,6 +48,41 @@ public class MagicpondCommand implements CommandExecutor {
         }
 
         switch (args[0].toLowerCase()) {
+            case "set" -> {
+                if (!(sender instanceof Player player)) {
+                    send(sender, "Only a player can set a magic pond.", NamedTextColor.RED);
+                    return true;
+                }
+                Chunk chunk = player.getLocation().getChunk();
+                if (ponds.add(chunk)) {
+                    send(sender, "Magic pond enabled in chunk (" + chunk.getX() + ", " + chunk.getZ()
+                            + ") of " + chunk.getWorld().getName() + ".", NamedTextColor.GREEN);
+                } else {
+                    send(sender, "This chunk is already a magic pond.", NamedTextColor.GRAY);
+                }
+            }
+            case "unset", "remove" -> {
+                if (!(sender instanceof Player player)) {
+                    send(sender, "Only a player can unset a magic pond.", NamedTextColor.RED);
+                    return true;
+                }
+                Chunk chunk = player.getLocation().getChunk();
+                if (ponds.remove(chunk)) {
+                    send(sender, "Magic pond disabled in chunk (" + chunk.getX() + ", " + chunk.getZ()
+                            + ").", NamedTextColor.GREEN);
+                } else {
+                    send(sender, "This chunk is not a magic pond.", NamedTextColor.GRAY);
+                }
+            }
+            case "list" -> {
+                if (ponds.count() == 0) {
+                    send(sender, "No magic pond chunks designated. Stand in one and run /" + label + " set.",
+                            NamedTextColor.GRAY);
+                } else {
+                    send(sender, "Magic pond chunks (" + ponds.count() + "): "
+                            + String.join(", ", ponds.keys()), NamedTextColor.AQUA);
+                }
+            }
             case "reload" -> {
                 plugin.reload();
                 send(sender, "Configuration reloaded.", NamedTextColor.GREEN);
@@ -57,6 +99,7 @@ public class MagicpondCommand implements CommandExecutor {
                         + " | resume=" + settings.resumeThreshold()
                         + " | gain=" + settings.gainPerCatch()
                         + " | half-life=" + settings.recoveryHalfLifeSeconds() + "s"
+                        + " | ponds=" + ponds.count()
                         + " | tracked-players=" + tracker.trackedPlayers(), NamedTextColor.AQUA);
             }
             case "check" -> {
@@ -82,7 +125,7 @@ public class MagicpondCommand implements CommandExecutor {
     }
 
     private void usage(CommandSender sender, String label) {
-        send(sender, "Usage: /" + label + " <info|check|clear|reload>", NamedTextColor.GRAY);
+        send(sender, "Usage: /" + label + " <set|unset|list|info|check|clear|reload>", NamedTextColor.GRAY);
     }
 
     private void send(CommandSender sender, String message, NamedTextColor color) {
