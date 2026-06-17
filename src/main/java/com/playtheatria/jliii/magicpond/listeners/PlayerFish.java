@@ -1,15 +1,11 @@
 package com.playtheatria.jliii.magicpond.listeners;
 
-import com.gmail.nossr50.datatypes.player.McMMOPlayer;
-import com.gmail.nossr50.skills.fishing.FishingManager;
-import com.gmail.nossr50.util.player.UserManager;
 import com.playtheatria.jliii.magicpond.Magicpond;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.*;
 import org.bukkit.entity.Item;
-import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -31,19 +27,10 @@ public class PlayerFish implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void OnFishEvent(PlayerFishEvent event) {
-        Player player = event.getPlayer();
-        //Profile not loaded
-        McMMOPlayer mcMMOPlayer = UserManager.getPlayer(player);
-        if(mcMMOPlayer == null) {
-            Bukkit.getConsoleSender().sendMessage("Player is null.");
-            return;
-        }
-        FishingManager fishingManager = mcMMOPlayer.getFishingManager();
-        if (fishingManager.isExploitingFishing(event.getHook().getLocation().toVector())) return;
+        if (event.getCaught() == null || event.getState() != PlayerFishEvent.State.CAUGHT_FISH) return;
+        if (!pondLocation.contains(event.getHook().getLocation().getBlock().getLocation())) return;
 
         World world = event.getPlayer().getWorld();
-        if (event.getCaught() == null ||  !(event.getState() == PlayerFishEvent.State.CAUGHT_FISH)) return;
-        if (!pondLocation.contains(event.getHook().getLocation().getBlock().getLocation())) return;
         Item caughtItem = (Item) event.getCaught();
         new BukkitRunnable() {
             public void run() {
@@ -75,4 +62,3 @@ public class PlayerFish implements Listener {
         return (int) (Math.random() * range);
     }
 }
-
