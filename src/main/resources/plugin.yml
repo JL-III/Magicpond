@@ -13,6 +13,3 @@ permissions:
   magicpond.admin:
     description: Access to Magicpond admin commands.
     default: op
-  magicpond.bypass:
-    description: Exempts the player from fishing-pressure depletion.
-    default: op

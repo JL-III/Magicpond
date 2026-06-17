@@ -119,7 +119,6 @@ movement-based idea below.
 - `/magicpond clear` — wipe all tracked pressure.
 - `/magicpond reload` — reload `config.yml` (and reschedule the sweep).
 - `magicpond.admin` (op) — use the command.
-- `magicpond.bypass` (op) — exempt from depletion (useful for staff/testing).
 
 ## Verifying in-game
 

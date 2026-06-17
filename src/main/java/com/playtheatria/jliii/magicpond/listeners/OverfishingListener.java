@@ -49,8 +49,6 @@ public class OverfishingListener implements Listener {
         if (hook == null || hook.getWorld() == null) return;
 
         Player player = event.getPlayer();
-        if (player.hasPermission("magicpond.bypass")) return;
-
         CellKey key = tracker.cellOf(hook);
         switch (tracker.recordCatch(player.getUniqueId(), key)) {
             case ALLOWED -> { /* plenty of fish; nothing to do */ }

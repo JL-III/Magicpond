@@ -39,7 +39,6 @@ public class PlayerFish implements Listener {
 
         // No bonus on an overfished spot — the player reeled in junk, not a fish.
         if (settings.enabled()
-                && !event.getPlayer().hasPermission("magicpond.bypass")
                 && tracker.isDepleted(event.getPlayer().getUniqueId(), tracker.cellOf(hook))) {
             return;
         }
