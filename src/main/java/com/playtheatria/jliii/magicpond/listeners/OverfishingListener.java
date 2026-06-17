@@ -13,26 +13,23 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerFishEvent;
 
-import java.util.List;
-
 /**
  * Denies fish catches in cells that have been over-fished.
  * <p>
  * Runs at {@link EventPriority#LOWEST} so that cancelling the event suppresses the whole
- * downstream reward chain (vanilla drop, mcMMO treasure/XP, and the Magicpond bonus, all
- * of which run later with {@code ignoreCancelled = true}). Purely Bukkit/Paper API:
- * {@link PlayerFishEvent} + {@code FishHook#getLocation()}.
+ * downstream reward chain. In particular the Magicpond bonus listener runs later with
+ * {@code ignoreCancelled = true}, so a depleted catch yields no vanilla fish <em>and</em>
+ * no pond bonus &mdash; this is what lets the magic pond run safely without mcMMO's
+ * exploit check. Purely Bukkit/Paper API: {@link PlayerFishEvent} + {@code FishHook#getLocation()}.
  */
 public class OverfishingListener implements Listener {
 
     private final FishingPressureTracker tracker;
     private final Settings settings;
-    private final List<Location> pondLocations;
 
-    public OverfishingListener(FishingPressureTracker tracker, Settings settings, List<Location> pondLocations) {
+    public OverfishingListener(FishingPressureTracker tracker, Settings settings) {
         this.tracker = tracker;
         this.settings = settings;
-        this.pondLocations = pondLocations;
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
@@ -46,9 +43,6 @@ public class OverfishingListener implements Listener {
 
         Player player = event.getPlayer();
         if (player.hasPermission("magicpond.bypass")) return;
-
-        // Magic ponds are intentional "fish here" reward spots; leave them out by default.
-        if (settings.exemptMagicPond() && pondLocations.contains(hook.getBlock().getLocation())) return;
 
         CellKey key = tracker.cellOf(hook);
         boolean allowed = tracker.recordCatch(player.getUniqueId(), key);

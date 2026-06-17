@@ -35,10 +35,6 @@ overfishing:
   # sustained rapid fishing climbs past it.
   recovery-half-life-seconds: 180
 
-  # Magic ponds are designed reward spots; leave them out of depletion so the
-  # existing bonus-fish feature keeps working. Set false to deplete them too.
-  exempt-magic-pond: true
-
   # Send the player an action-bar message when a catch is denied.
   notify-player: true
 

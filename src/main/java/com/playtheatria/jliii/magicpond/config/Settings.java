@@ -17,7 +17,6 @@ public class Settings {
     private double resumeThreshold;
     private double gainPerCatch;
     private double recoveryHalfLifeSeconds;
-    private boolean exemptMagicPond;
     private boolean notifyPlayer;
     private int sweepIntervalSeconds;
 
@@ -28,7 +27,6 @@ public class Settings {
         resumeThreshold = config.getDouble("overfishing.resume-threshold", 6.0);
         gainPerCatch = config.getDouble("overfishing.gain-per-catch", 1.0);
         recoveryHalfLifeSeconds = Math.max(1.0, config.getDouble("overfishing.recovery-half-life-seconds", 180.0));
-        exemptMagicPond = config.getBoolean("overfishing.exempt-magic-pond", true);
         notifyPlayer = config.getBoolean("overfishing.notify-player", true);
         sweepIntervalSeconds = Math.max(5, config.getInt("overfishing.sweep-interval-seconds", 120));
 
@@ -60,10 +58,6 @@ public class Settings {
 
     public double recoveryHalfLifeSeconds() {
         return recoveryHalfLifeSeconds;
-    }
-
-    public boolean exemptMagicPond() {
-        return exemptMagicPond;
     }
 
     public boolean notifyPlayer() {

@@ -4,6 +4,13 @@ A within-API replacement for mcMMO's fishing anti-exploit, built to deter
 autofishing: fish a spot too frequently for too long and the fish stop biting
 there until the spot recovers.
 
+This is what lets the **magic pond run without mcMMO**. Previously the pond
+bonus was gated by mcMMO's `isExploitingFishing` check; now it's gated by this
+system instead. It applies everywhere (the pond is not exempt): a depleted catch
+is cancelled, and because the bonus listener runs later with
+`ignoreCancelled = true`, depletion suppresses the vanilla fish *and* the pond
+bonus together.
+
 ## Why not just use mcMMO's check?
 
 mcMMO's `FishingManager` keeps a **single** `lastFishingBoundingBox` per player.
@@ -65,7 +72,6 @@ updates won't break it.
 | `resume-threshold` | `6.0` | Recover below this to start catching again (hysteresis). |
 | `gain-per-catch` | `1.0` | Pressure added per catch. |
 | `recovery-half-life-seconds` | `180` | Seconds for pressure to halve. |
-| `exempt-magic-pond` | `true` | Skip the existing magic-pond reward regions. |
 | `notify-player` | `true` | Action-bar message on a denied catch. |
 | `sweep-interval-seconds` | `120` | Background decay/eviction interval. |
 
@@ -76,6 +82,21 @@ updates won't break it.
 - **Autofishers lasting too long?** Lower `pressure-cap`, lengthen
   `recovery-half-life-seconds`, or raise `gain-per-catch`.
 - **Spot too small/large?** Adjust `cell-size`.
+
+### Magic pond tuning (important)
+
+The pond is meant for concentrated fishing, so `cell-size` is the key lever:
+an AFK auto-clicker re-casts to the *same* landing spot (one cell) and depletes
+it, while an active player's casts vary across several cells and keep each one
+below the cap. A **smaller `cell-size`** sharpens that distinction (more cells to
+spread across) at the cost of being stricter on players who fish a very tight
+spot; a larger one is more forgiving but easier to AFK.
+
+Honest caveat: a legit player and a bot catch fish at the *same* rate (both are
+bound by Minecraft's bite timing), so pressure alone can't perfectly separate
+"dedicated grinder standing still" from "bot standing still." The spatial spread
+above is the practical discriminator; for a stronger guarantee see the
+movement-based idea below.
 
 ## Commands & permissions
 
@@ -104,3 +125,9 @@ updates won't break it.
 - Currently depletion is binary (catch or no catch). A "diminishing returns"
   variant could instead scale `event.setExpToDrop(...)` / reward chance with
   pressure for a softer feel.
+- **Movement-based AFK signal (recommended next step):** also track the player's
+  position + look direction (yaw/pitch) between catches. An auto-clicker holds
+  the same spot and angle for hundreds of catches; a human inevitably shifts.
+  Combining "no movement" with pressure would target true automation while
+  letting active players fish the pond as long as they like — a robust,
+  still-within-API upgrade over mcMMO's brittle single-slot check.

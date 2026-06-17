@@ -56,7 +56,6 @@ public class MagicpondCommand implements CommandExecutor {
                         + " | resume=" + settings.resumeThreshold()
                         + " | gain=" + settings.gainPerCatch()
                         + " | half-life=" + settings.recoveryHalfLifeSeconds() + "s"
-                        + " | exempt-pond=" + settings.exemptMagicPond()
                         + " | tracked-players=" + tracker.trackedPlayers(), NamedTextColor.AQUA);
             }
             case "check" -> {
