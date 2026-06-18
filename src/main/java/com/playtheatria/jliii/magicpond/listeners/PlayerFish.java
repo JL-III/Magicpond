@@ -44,6 +44,11 @@ public class PlayerFish implements Listener {
 
         World world = event.getPlayer().getWorld();
         Item caughtItem = (Item) event.getCaught();
+        // A magic pond always yields fish — if vanilla rolled junk/treasure, swap it for one.
+        // (Depleted ponds are handled earlier: they keep the overfishing junk and skip the bonus.)
+        if (!isFish(caughtItem.getItemStack().getType())) {
+            caughtItem.setItemStack(new ItemStack(randomFish()));
+        }
         new BukkitRunnable() {
             public void run() {
                 if (dropTropical()) {
@@ -72,5 +77,20 @@ public class PlayerFish implements Listener {
     private int range() {
         int range = (10) + 1;
         return (int) (Math.random() * range);
+    }
+
+    private boolean isFish(Material material) {
+        return material == Material.COD
+                || material == Material.SALMON
+                || material == Material.TROPICAL_FISH
+                || material == Material.PUFFERFISH;
+    }
+
+    private Material randomFish() {
+        double roll = Math.random();
+        if (roll < 0.60) return Material.COD;
+        if (roll < 0.90) return Material.SALMON;
+        if (roll < 0.98) return Material.PUFFERFISH;
+        return Material.TROPICAL_FISH;
     }
 }
