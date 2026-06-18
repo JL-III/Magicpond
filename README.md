@@ -9,9 +9,9 @@ Magic ponds are designated per-chunk in-game: stand in the chunk and run
 Designations persist in `ponds.yml` in the plugin's data folder.
 
 It also includes an **overfishing** system that deters autofishing: a player who
-fishes one spot too frequently for too long stops catching fish there until the
-spot recovers. See [docs/overfishing.md](docs/overfishing.md) for the model,
-configuration, and in-game verification steps.
+fishes one spot too frequently for too long starts pulling junk instead of fish
+there until the spot recovers. See [docs/overfishing.md](docs/overfishing.md) for
+the model, configuration, and in-game verification steps.
 
 ### Dependencies
 - None at runtime. Built against the Paper API (`paper.version` in `pom.xml`).

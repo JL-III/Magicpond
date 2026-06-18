@@ -3,7 +3,7 @@ package com.playtheatria.jliii.magicpond.tracking;
 /**
  * The mutable state of a single fishing cell for a single player: how much "pressure"
  * (recent fishing activity) it carries, when it was last touched, and whether it is
- * currently depleted (catches denied).
+ * currently depleted (fished out).
  * <p>
  * Pressure decays exponentially toward zero so that a spot recovers if left alone.
  */
