@@ -4,6 +4,7 @@ import com.playtheatria.jliii.magicpond.Magicpond;
 import com.playtheatria.jliii.magicpond.managers.ConfigManager;
 import com.playtheatria.jliii.magicpond.pond.PondManager;
 import com.playtheatria.jliii.magicpond.tracking.FishingPressureTracker;
+import com.playtheatria.jliii.magicpond.util.CustomLogger;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -24,12 +25,15 @@ public class PlayerFish implements Listener {
     private final Magicpond magicpond;
     private final FishingPressureTracker tracker;
     private final ConfigManager configManager;
+    private final CustomLogger logger;
 
-    public PlayerFish(PondManager ponds, Magicpond magicpond, FishingPressureTracker tracker, ConfigManager configManager) {
+    public PlayerFish(PondManager ponds, Magicpond magicpond, FishingPressureTracker tracker,
+                      ConfigManager configManager, CustomLogger logger) {
         this.ponds = ponds;
         this.magicpond = magicpond;
         this.tracker = tracker;
         this.configManager = configManager;
+        this.logger = logger;
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -41,11 +45,11 @@ public class PlayerFish implements Listener {
         // The magic pond bonus is gated behind a permission (overfishing stays global).
         Player player = event.getPlayer();
         boolean canUse = player.hasPermission("magicpond.use");
-        magicpond.debug(player.getName() + " fished a magic pond chunk; magicpond.use=" + canUse);
+        logger.debug(player.getName() + " fished a magic pond chunk; magicpond.use=" + canUse);
         if (!canUse) return;
 
         // No bonus on an overfished spot — the player reeled in junk, not a fish.
-        if (configManager.enabled() && tracker.isDepleted(player.getUniqueId(), tracker.cellOf(hook))) {
+        if (configManager.overfishingEnabled() && tracker.isDepleted(player.getUniqueId(), tracker.cellOf(hook))) {
             return;
         }
 

@@ -6,6 +6,7 @@ import com.playtheatria.jliii.magicpond.listeners.PlayerFish;
 import com.playtheatria.jliii.magicpond.managers.ConfigManager;
 import com.playtheatria.jliii.magicpond.pond.PondManager;
 import com.playtheatria.jliii.magicpond.tracking.FishingPressureTracker;
+import com.playtheatria.jliii.magicpond.util.CustomLogger;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
@@ -20,11 +21,12 @@ public final class Magicpond extends JavaPlugin {
     @Override
     public void onEnable() {
         configManager = new ConfigManager(this);
+        CustomLogger logger = new CustomLogger(getLogger(), configManager);
         ponds = new PondManager(this);
         ponds.load();
         tracker = new FishingPressureTracker(configManager);
 
-        getServer().getPluginManager().registerEvents(new PlayerFish(ponds, this, tracker, configManager), this);
+        getServer().getPluginManager().registerEvents(new PlayerFish(ponds, this, tracker, configManager, logger), this);
         getServer().getPluginManager().registerEvents(new OverfishingListener(tracker, configManager), this);
 
         PluginCommand command = getCommand("magicpond");
@@ -40,13 +42,6 @@ public final class Magicpond extends JavaPlugin {
         if (sweepTask != null) {
             sweepTask.cancel();
             sweepTask = null;
-        }
-    }
-
-    /** Logs a message at INFO only when {@code debug} is enabled in config.yml. */
-    public void debug(String message) {
-        if (configManager.debug()) {
-            getLogger().info("[debug] " + message);
         }
     }
 

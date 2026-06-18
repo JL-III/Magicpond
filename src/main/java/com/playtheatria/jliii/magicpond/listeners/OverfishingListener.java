@@ -41,7 +41,7 @@ public class OverfishingListener implements Listener {
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onFish(PlayerFishEvent event) {
-        if (!configManager.enabled()) return;
+        if (!configManager.overfishingEnabled()) return;
         if (event.getState() != PlayerFishEvent.State.CAUGHT_FISH) return;
         if (event.getHook() == null) return;
 

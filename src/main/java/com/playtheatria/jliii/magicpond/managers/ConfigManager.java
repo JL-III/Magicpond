@@ -27,7 +27,7 @@ public class ConfigManager {
     private final Magicpond plugin;
 
     private boolean debug;
-    private boolean enabled;
+    private boolean overfishingEnabled;
     private int cellSize;
     private double pressureCap;
     private double resumeThreshold;
@@ -54,7 +54,7 @@ public class ConfigManager {
         FileConfiguration config = plugin.getConfig();
 
         debug = config.getBoolean("debug", false);
-        enabled = config.getBoolean("overfishing.enabled", true);
+        overfishingEnabled = config.getBoolean("overfishing.enabled", true);
         cellSize = Math.max(1, config.getInt("overfishing.cell-size", 6));
         pressureCap = config.getDouble("overfishing.pressure-cap", 5.0);
         resumeThreshold = config.getDouble("overfishing.resume-threshold", 2.0);
@@ -91,8 +91,9 @@ public class ConfigManager {
         return debug;
     }
 
-    public boolean enabled() {
-        return enabled;
+    /** Whether the overfishing system is active. Does not affect the magic-pond bonus. */
+    public boolean overfishingEnabled() {
+        return overfishingEnabled;
     }
 
     public int cellSize() {

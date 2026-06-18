@@ -17,7 +17,8 @@ debug: false
 # The magic-pond bonus is additionally gated behind the `magicpond.use`
 # permission. Overfishing below is global and applies to everyone regardless.
 overfishing:
-  # Master switch for the whole system.
+  # Master switch for the overfishing system only. Does NOT affect the
+  # magic-pond bonus (that is controlled by the magicpond.use permission).
   enabled: true
 
   # Edge length, in blocks, of a grid cell. Hooks landing in the same cell
