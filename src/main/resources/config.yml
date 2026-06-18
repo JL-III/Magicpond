@@ -4,7 +4,7 @@
 # The overfishing system tracks where each player's hook lands on a grid of
 # cells. Every catch adds "pressure" to that cell; pressure decays over time.
 # Fish a spot too fast for too long and its pressure passes the cap, after
-# which catches there are denied (no fish) until it recovers.
+# which catches there yield junk instead of fish until it recovers.
 #
 # This replaces mcMMO's single-slot "last cast" anti-exploit, which is bypassed
 # by simply alternating between two fishing spots. Here every cell is tracked
@@ -44,7 +44,7 @@ overfishing:
   # set equal to pressure-cap to disable the warning.
   warn-threshold: 3.0
 
-  # Pressure added per fish caught (applied even to denied catches, so an
+  # Pressure added per fish caught (applied even on depleted catches, so an
   # autofisher hammering a depleted spot keeps it depleted).
   gain-per-catch: 1.0
 
@@ -74,5 +74,6 @@ overfishing:
   notify-player: true
 
   # How often (seconds) the background sweep decays and evicts recovered cells
-  # to keep memory bounded. Changing this reschedules the task on reload.
+  # to keep memory bounded. The sweep re-reads this each cycle, so a change takes
+  # effect on the next cycle after /magicpond reload.
   sweep-interval-seconds: 120

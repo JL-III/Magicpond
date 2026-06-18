@@ -6,10 +6,10 @@ there until the spot recovers.
 
 This is what lets the **magic pond run without mcMMO**. Previously the pond
 bonus was gated by mcMMO's `isExploitingFishing` check; now it's gated by this
-system instead. It applies everywhere (the pond is not exempt): a depleted catch
-is cancelled, and because the bonus listener runs later with
-`ignoreCancelled = true`, depletion suppresses the vanilla fish *and* the pond
-bonus together.
+system instead. Overfishing applies everywhere (the pond included): a depleted
+catch yields junk instead of fish (or is cancelled if no junk is configured), and
+the pond's bonus listener skips its bonus on a depleted spot — so an overfished
+pond gives neither the fish nor the bonus.
 
 ## Why not just use mcMMO's check?
 
@@ -59,7 +59,7 @@ outcome. Steady fishing settles at an equilibrium of
 
 - **Sustained one-spot fishing** climbs past the cap in ~`pressure-cap / gain`
   catches (~5 by default) and stays depleted while you keep casting there, because
-  denied catches still add pressure — so you must aim somewhere new.
+  every catch adds pressure even once depleted — so you must aim somewhere new.
 - **If you fish slower than the spot recovers**, the equilibrium stays under the
   cap and the spot never depletes. This is the key tuning relationship: a **lower
   `pressure-cap`** (or longer half-life) makes the mechanic trigger sooner *and*
@@ -124,7 +124,7 @@ movement-based idea below.
 - `/magicpond info` — current settings + tracked-player count.
 - `/magicpond check` — pressure of the cell you're standing in.
 - `/magicpond clear` — wipe all tracked pressure.
-- `/magicpond reload` — reload `config.yml` (and reschedule the sweep).
+- `/magicpond reload` — reload `config.yml` through the ConfigManager.
 - `magicpond.admin` (op) — use the command.
 - `magicpond.use` (op) — receive the magic-pond bonus. Overfishing applies to everyone regardless of this permission.
 
