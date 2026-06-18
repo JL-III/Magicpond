@@ -1,7 +1,7 @@
 package com.playtheatria.jliii.magicpond.listeners;
 
 import com.playtheatria.jliii.magicpond.Magicpond;
-import com.playtheatria.jliii.magicpond.config.Settings;
+import com.playtheatria.jliii.magicpond.managers.ConfigManager;
 import com.playtheatria.jliii.magicpond.pond.PondManager;
 import com.playtheatria.jliii.magicpond.tracking.FishingPressureTracker;
 import net.kyori.adventure.text.Component;
@@ -23,13 +23,13 @@ public class PlayerFish implements Listener {
     private final PondManager ponds;
     private final Magicpond magicpond;
     private final FishingPressureTracker tracker;
-    private final Settings settings;
+    private final ConfigManager configManager;
 
-    public PlayerFish(PondManager ponds, Magicpond magicpond, FishingPressureTracker tracker, Settings settings) {
+    public PlayerFish(PondManager ponds, Magicpond magicpond, FishingPressureTracker tracker, ConfigManager configManager) {
         this.ponds = ponds;
         this.magicpond = magicpond;
         this.tracker = tracker;
-        this.settings = settings;
+        this.configManager = configManager;
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -38,14 +38,18 @@ public class PlayerFish implements Listener {
         Location hook = event.getHook().getLocation();
         if (!ponds.isPond(hook)) return;
 
+        // The magic pond bonus is gated behind a permission (overfishing stays global).
+        Player player = event.getPlayer();
+        boolean canUse = player.hasPermission("magicpond.use");
+        magicpond.debug(player.getName() + " fished a magic pond chunk; magicpond.use=" + canUse);
+        if (!canUse) return;
+
         // No bonus on an overfished spot — the player reeled in junk, not a fish.
-        if (settings.enabled()
-                && tracker.isDepleted(event.getPlayer().getUniqueId(), tracker.cellOf(hook))) {
+        if (configManager.enabled() && tracker.isDepleted(player.getUniqueId(), tracker.cellOf(hook))) {
             return;
         }
 
-        World world = event.getPlayer().getWorld();
-        Player player = event.getPlayer();
+        World world = player.getWorld();
         Item caughtItem = (Item) event.getCaught();
         // A magic pond always yields fish — if vanilla rolled junk/treasure, swap it for one.
         // (Depleted ponds are handled earlier: they keep the overfishing junk and skip the bonus.)

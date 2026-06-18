@@ -1,6 +1,6 @@
 package com.playtheatria.jliii.magicpond.listeners;
 
-import com.playtheatria.jliii.magicpond.config.Settings;
+import com.playtheatria.jliii.magicpond.managers.ConfigManager;
 import com.playtheatria.jliii.magicpond.tracking.CellKey;
 import com.playtheatria.jliii.magicpond.tracking.FishingPressureTracker;
 import net.kyori.adventure.text.Component;
@@ -32,16 +32,16 @@ import java.util.concurrent.ThreadLocalRandom;
 public class OverfishingListener implements Listener {
 
     private final FishingPressureTracker tracker;
-    private final Settings settings;
+    private final ConfigManager configManager;
 
-    public OverfishingListener(FishingPressureTracker tracker, Settings settings) {
+    public OverfishingListener(FishingPressureTracker tracker, ConfigManager configManager) {
         this.tracker = tracker;
-        this.settings = settings;
+        this.configManager = configManager;
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onFish(PlayerFishEvent event) {
-        if (!settings.enabled()) return;
+        if (!configManager.enabled()) return;
         if (event.getState() != PlayerFishEvent.State.CAUGHT_FISH) return;
         if (event.getHook() == null) return;
 
@@ -59,7 +59,7 @@ public class OverfishingListener implements Listener {
     }
 
     private void deplete(PlayerFishEvent event, Player player) {
-        List<Material> garbage = settings.garbageItems();
+        List<Material> garbage = configManager.garbageItems();
         if (!garbage.isEmpty() && event.getCaught() instanceof Item caught) {
             // Swap the reeled-in fish for a random piece of junk; no XP for overfishing.
             Material junk = garbage.get(ThreadLocalRandom.current().nextInt(garbage.size()));
@@ -73,7 +73,7 @@ public class OverfishingListener implements Listener {
     }
 
     private void notify(Player player, String message, NamedTextColor color) {
-        if (!settings.notifyPlayer()) return;
+        if (!configManager.notifyPlayer()) return;
         player.sendActionBar(Component.text(message).color(color).decorate(TextDecoration.ITALIC));
     }
 }

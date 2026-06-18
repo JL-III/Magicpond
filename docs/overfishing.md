@@ -76,8 +76,12 @@ updates won't break it.
 
 ## Configuration (`config.yml`)
 
+All config is owned by a single `ConfigManager` (the only class that touches
+Bukkit's config), and is reloadable at runtime with `/magicpond reload`.
+
 | Key | Default | Meaning |
 | --- | --- | --- |
+| `debug` *(top-level)* | `false` | Log extra detail, e.g. the magic-pond permission check on each pond catch. |
 | `enabled` | `true` | Master switch. |
 | `cell-size` | `6` | Grid cell edge in blocks (size of "one spot"). |
 | `pressure-cap` | `5.0` | Pressure at which a cell becomes depleted (≈ catches before it dries). |
@@ -122,6 +126,7 @@ movement-based idea below.
 - `/magicpond clear` — wipe all tracked pressure.
 - `/magicpond reload` — reload `config.yml` (and reschedule the sweep).
 - `magicpond.admin` (op) — use the command.
+- `magicpond.use` (op) — receive the magic-pond bonus. Overfishing applies to everyone regardless of this permission.
 
 ## Verifying in-game
 

@@ -9,6 +9,13 @@
 # This replaces mcMMO's single-slot "last cast" anti-exploit, which is bypassed
 # by simply alternating between two fishing spots. Here every cell is tracked
 # independently, so alternation no longer helps.
+
+# Log extra detail to the server console, e.g. the magic-pond permission check
+# on each pond catch. Leave off in production.
+debug: false
+
+# The magic-pond bonus is additionally gated behind the `magicpond.use`
+# permission. Overfishing below is global and applies to everyone regardless.
 overfishing:
   # Master switch for the whole system.
   enabled: true

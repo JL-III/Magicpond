@@ -1,9 +1,9 @@
 package com.playtheatria.jliii.magicpond;
 
 import com.playtheatria.jliii.magicpond.commands.MagicpondCommand;
-import com.playtheatria.jliii.magicpond.config.Settings;
 import com.playtheatria.jliii.magicpond.listeners.OverfishingListener;
 import com.playtheatria.jliii.magicpond.listeners.PlayerFish;
+import com.playtheatria.jliii.magicpond.managers.ConfigManager;
 import com.playtheatria.jliii.magicpond.pond.PondManager;
 import com.playtheatria.jliii.magicpond.tracking.FishingPressureTracker;
 import org.bukkit.command.PluginCommand;
@@ -12,26 +12,24 @@ import org.bukkit.scheduler.BukkitTask;
 
 public final class Magicpond extends JavaPlugin {
 
-    private final Settings settings = new Settings();
+    private ConfigManager configManager;
     private PondManager ponds;
     private FishingPressureTracker tracker;
     private BukkitTask sweepTask;
 
     @Override
     public void onEnable() {
-        saveDefaultConfig();
-        settings.load(getConfig());
-
+        configManager = new ConfigManager(this);
         ponds = new PondManager(this);
         ponds.load();
-        tracker = new FishingPressureTracker(settings);
+        tracker = new FishingPressureTracker(configManager);
 
-        getServer().getPluginManager().registerEvents(new PlayerFish(ponds, this, tracker, settings), this);
-        getServer().getPluginManager().registerEvents(new OverfishingListener(tracker, settings), this);
+        getServer().getPluginManager().registerEvents(new PlayerFish(ponds, this, tracker, configManager), this);
+        getServer().getPluginManager().registerEvents(new OverfishingListener(tracker, configManager), this);
 
         PluginCommand command = getCommand("magicpond");
         if (command != null) {
-            command.setExecutor(new MagicpondCommand(this, tracker, settings, ponds));
+            command.setExecutor(new MagicpondCommand(this, tracker, configManager, ponds));
         }
 
         startSweepTask();
@@ -45,10 +43,20 @@ public final class Magicpond extends JavaPlugin {
         }
     }
 
-    /** Reloads config.yml into the shared {@link Settings} and reschedules the sweep task. */
+    public ConfigManager getConfigManager() {
+        return configManager;
+    }
+
+    /** Logs a message at INFO only when {@code debug} is enabled in config.yml. */
+    public void debug(String message) {
+        if (configManager.debug()) {
+            getLogger().info("[debug] " + message);
+        }
+    }
+
+    /** Reloads config via the {@link ConfigManager} and reschedules the sweep task. */
     public void reload() {
-        reloadConfig();
-        settings.load(getConfig());
+        configManager.reload();
         startSweepTask();
     }
 
@@ -56,7 +64,7 @@ public final class Magicpond extends JavaPlugin {
         if (sweepTask != null) {
             sweepTask.cancel();
         }
-        long sweepTicks = settings.sweepIntervalSeconds() * 20L;
+        long sweepTicks = configManager.sweepIntervalSeconds() * 20L;
         sweepTask = getServer().getScheduler().runTaskTimer(this, tracker::sweep, sweepTicks, sweepTicks);
     }
 }

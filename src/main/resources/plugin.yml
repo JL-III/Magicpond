@@ -13,3 +13,6 @@ permissions:
   magicpond.admin:
     description: Access to Magicpond admin commands.
     default: op
+  magicpond.use:
+    description: Receive the magic-pond bonus fish. Overfishing applies regardless.
+    default: op
