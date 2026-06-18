@@ -1,5 +1,6 @@
-package com.playtheatria.jliii.magicpond.config;
+package com.playtheatria.jliii.magicpond.managers;
 
+import com.playtheatria.jliii.magicpond.Magicpond;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 
@@ -7,18 +8,25 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Holds the tunable values for the overfishing / fishing-pressure system.
+ * Central owner of {@code config.yml}.
  * <p>
- * A single instance is shared by every component so that {@link #load(FileConfiguration)}
- * (called on plugin enable and on {@code /magicpond reload}) updates all of them at once.
- * All values live under the {@code overfishing} section of {@code config.yml}.
+ * It is the single place that touches Bukkit's plugin config: it saves the bundled
+ * default on construction, parses + validates every tunable into typed fields, and
+ * exposes them via getters. Nothing else in the plugin should call
+ * {@code getConfig()} / {@code reloadConfig()} / {@code saveDefaultConfig()} — every
+ * config read routes through this manager.
+ * <p>
+ * {@link #reload()} re-reads the file from disk and is wired to {@code /magicpond reload}.
  */
-public class Settings {
+public class ConfigManager {
 
     private static final List<String> DEFAULT_GARBAGE = List.of(
             "LEATHER_BOOTS", "LEATHER", "BONE", "STRING", "BOWL",
             "STICK", "INK_SAC", "ROTTEN_FLESH", "LILY_PAD", "BAMBOO");
 
+    private final Magicpond plugin;
+
+    private boolean debug;
     private boolean enabled;
     private int cellSize;
     private double pressureCap;
@@ -30,8 +38,23 @@ public class Settings {
     private int sweepIntervalSeconds;
     private List<Material> garbageItems;
 
-    public void load(FileConfiguration config) {
-        enabled = config.getBoolean("overfishing.enabled", true);
+    public ConfigManager(Magicpond plugin) {
+        this.plugin = plugin;
+        plugin.saveDefaultConfig();
+        load();
+    }
+
+    /** Re-reads config.yml from disk. Invoked by {@code /magicpond reload}. */
+    public void reload() {
+        plugin.reloadConfig();
+        load();
+    }
+
+    private void load() {
+        FileConfiguration config = plugin.getConfig();
+
+        debug = config.getBoolean("debug", false);
+        enabled = config.getBoolean("enabled", true);
         cellSize = Math.max(1, config.getInt("overfishing.cell-size", 6));
         pressureCap = config.getDouble("overfishing.pressure-cap", 5.0);
         resumeThreshold = config.getDouble("overfishing.resume-threshold", 2.0);
@@ -64,6 +87,11 @@ public class Settings {
         }
     }
 
+    public boolean debug() {
+        return debug;
+    }
+
+    /** Master switch for the whole plugin: gates both the magic pond and overfishing. */
     public boolean enabled() {
         return enabled;
     }

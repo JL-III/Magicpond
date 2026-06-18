@@ -1,6 +1,6 @@
 package com.playtheatria.jliii.magicpond.tracking;
 
-import com.playtheatria.jliii.magicpond.config.Settings;
+import com.playtheatria.jliii.magicpond.managers.ConfigManager;
 import org.bukkit.Location;
 
 import java.util.HashMap;
@@ -19,16 +19,16 @@ import java.util.UUID;
  */
 public class FishingPressureTracker {
 
-    private final Settings settings;
+    private final ConfigManager configManager;
     private final Map<UUID, Map<CellKey, FishingSpot>> data = new HashMap<>();
 
-    public FishingPressureTracker(Settings settings) {
-        this.settings = settings;
+    public FishingPressureTracker(ConfigManager configManager) {
+        this.configManager = configManager;
     }
 
     /** Maps a hook location to its grid cell using the configured cell size. */
     public CellKey cellOf(Location location) {
-        int size = settings.cellSize();
+        int size = configManager.cellSize();
         return new CellKey(
                 location.getWorld().getName(),
                 Math.floorDiv(location.getBlockX(), size),
@@ -50,31 +50,31 @@ public class FishingPressureTracker {
         long now = System.currentTimeMillis();
         FishingSpot spot = data.computeIfAbsent(playerId, id -> new HashMap<>())
                 .computeIfAbsent(key, k -> new FishingSpot(now));
-        spot.decay(now, settings.halfLifeMillis());
+        spot.decay(now, configManager.halfLifeMillis());
 
         boolean allowed;
         if (spot.depleted) {
             // Stay depleted until the spot has recovered below the resume threshold (hysteresis).
-            if (spot.pressure < settings.resumeThreshold()) {
+            if (spot.pressure < configManager.resumeThreshold()) {
                 spot.depleted = false;
                 allowed = true;
             } else {
                 allowed = false;
             }
-        } else if (spot.pressure >= settings.pressureCap()) {
+        } else if (spot.pressure >= configManager.pressureCap()) {
             spot.depleted = true;
             allowed = false;
         } else {
             allowed = true;
         }
 
-        spot.pressure += settings.gainPerCatch();
+        spot.pressure += configManager.gainPerCatch();
         spot.lastUpdate = now;
 
         if (!allowed) {
             return CatchOutcome.DEPLETED;
         }
-        return spot.pressure >= settings.warnThreshold() ? CatchOutcome.WARNING : CatchOutcome.ALLOWED;
+        return spot.pressure >= configManager.warnThreshold() ? CatchOutcome.WARNING : CatchOutcome.ALLOWED;
     }
 
     /** Whether the given player's cell is currently flagged depleted (read-only, no decay). */
@@ -100,7 +100,7 @@ public class FishingPressureTracker {
         if (spot == null) {
             return null;
         }
-        spot.decay(System.currentTimeMillis(), settings.halfLifeMillis());
+        spot.decay(System.currentTimeMillis(), configManager.halfLifeMillis());
         return spot;
     }
 
@@ -122,7 +122,7 @@ public class FishingPressureTracker {
      */
     public void sweep() {
         long now = System.currentTimeMillis();
-        long halfLife = settings.halfLifeMillis();
+        long halfLife = configManager.halfLifeMillis();
         Iterator<Map.Entry<UUID, Map<CellKey, FishingSpot>>> players = data.entrySet().iterator();
         while (players.hasNext()) {
             Map<CellKey, FishingSpot> spots = players.next().getValue();

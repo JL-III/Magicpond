@@ -1,7 +1,6 @@
 package com.playtheatria.jliii.magicpond.commands;
 
-import com.playtheatria.jliii.magicpond.Magicpond;
-import com.playtheatria.jliii.magicpond.config.Settings;
+import com.playtheatria.jliii.magicpond.managers.ConfigManager;
 import com.playtheatria.jliii.magicpond.pond.PondManager;
 import com.playtheatria.jliii.magicpond.tracking.CellKey;
 import com.playtheatria.jliii.magicpond.tracking.FishingPressureTracker;
@@ -28,15 +27,13 @@ import org.bukkit.entity.Player;
  */
 public class MagicpondCommand implements CommandExecutor {
 
-    private final Magicpond plugin;
     private final FishingPressureTracker tracker;
-    private final Settings settings;
+    private final ConfigManager configManager;
     private final PondManager ponds;
 
-    public MagicpondCommand(Magicpond plugin, FishingPressureTracker tracker, Settings settings, PondManager ponds) {
-        this.plugin = plugin;
+    public MagicpondCommand(FishingPressureTracker tracker, ConfigManager configManager, PondManager ponds) {
         this.tracker = tracker;
-        this.settings = settings;
+        this.configManager = configManager;
         this.ponds = ponds;
     }
 
@@ -84,7 +81,7 @@ public class MagicpondCommand implements CommandExecutor {
                 }
             }
             case "reload" -> {
-                plugin.reload();
+                configManager.reload();
                 send(sender, "Configuration reloaded.", NamedTextColor.GREEN);
             }
             case "clear" -> {
@@ -92,13 +89,13 @@ public class MagicpondCommand implements CommandExecutor {
                 send(sender, "Cleared all tracked fishing pressure.", NamedTextColor.GREEN);
             }
             case "info" -> {
-                send(sender, "Overfishing: " + (settings.enabled() ? "enabled" : "disabled")
-                        + " | cell-size=" + settings.cellSize()
-                        + " | cap=" + settings.pressureCap()
-                        + " | warn=" + settings.warnThreshold()
-                        + " | resume=" + settings.resumeThreshold()
-                        + " | gain=" + settings.gainPerCatch()
-                        + " | half-life=" + settings.recoveryHalfLifeSeconds() + "s"
+                send(sender, "Magicpond: " + (configManager.enabled() ? "enabled" : "disabled")
+                        + " | cell-size=" + configManager.cellSize()
+                        + " | cap=" + configManager.pressureCap()
+                        + " | warn=" + configManager.warnThreshold()
+                        + " | resume=" + configManager.resumeThreshold()
+                        + " | gain=" + configManager.gainPerCatch()
+                        + " | half-life=" + configManager.recoveryHalfLifeSeconds() + "s"
                         + " | ponds=" + ponds.count()
                         + " | tracked-players=" + tracker.trackedPlayers(), NamedTextColor.AQUA);
             }
@@ -114,7 +111,7 @@ public class MagicpondCommand implements CommandExecutor {
                             + "(" + key.world() + " " + key.x() + "," + key.z() + ").", NamedTextColor.GRAY);
                 } else {
                     send(sender, String.format("Cell (%s %d,%d): pressure=%.2f / cap %.2f%s",
-                            key.world(), key.x(), key.z(), spot.pressure(), settings.pressureCap(),
+                            key.world(), key.x(), key.z(), spot.pressure(), configManager.pressureCap(),
                             spot.depleted() ? " [DEPLETED]" : ""),
                             spot.depleted() ? NamedTextColor.RED : NamedTextColor.YELLOW);
                 }
