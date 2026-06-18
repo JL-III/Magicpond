@@ -1,6 +1,5 @@
 package com.playtheatria.jliii.magicpond.commands;
 
-import com.playtheatria.jliii.magicpond.Magicpond;
 import com.playtheatria.jliii.magicpond.managers.ConfigManager;
 import com.playtheatria.jliii.magicpond.pond.PondManager;
 import com.playtheatria.jliii.magicpond.tracking.CellKey;
@@ -28,13 +27,11 @@ import org.bukkit.entity.Player;
  */
 public class MagicpondCommand implements CommandExecutor {
 
-    private final Magicpond plugin;
     private final FishingPressureTracker tracker;
     private final ConfigManager configManager;
     private final PondManager ponds;
 
-    public MagicpondCommand(Magicpond plugin, FishingPressureTracker tracker, ConfigManager configManager, PondManager ponds) {
-        this.plugin = plugin;
+    public MagicpondCommand(FishingPressureTracker tracker, ConfigManager configManager, PondManager ponds) {
         this.tracker = tracker;
         this.configManager = configManager;
         this.ponds = ponds;
@@ -84,7 +81,7 @@ public class MagicpondCommand implements CommandExecutor {
                 }
             }
             case "reload" -> {
-                plugin.reload();
+                configManager.reload();
                 send(sender, "Configuration reloaded.", NamedTextColor.GREEN);
             }
             case "clear" -> {

@@ -29,10 +29,10 @@ public final class Magicpond extends JavaPlugin {
 
         PluginCommand command = getCommand("magicpond");
         if (command != null) {
-            command.setExecutor(new MagicpondCommand(this, tracker, configManager, ponds));
+            command.setExecutor(new MagicpondCommand(tracker, configManager, ponds));
         }
 
-        startSweepTask();
+        scheduleSweep();
     }
 
     @Override
@@ -43,10 +43,6 @@ public final class Magicpond extends JavaPlugin {
         }
     }
 
-    public ConfigManager getConfigManager() {
-        return configManager;
-    }
-
     /** Logs a message at INFO only when {@code debug} is enabled in config.yml. */
     public void debug(String message) {
         if (configManager.debug()) {
@@ -54,17 +50,15 @@ public final class Magicpond extends JavaPlugin {
         }
     }
 
-    /** Reloads config via the {@link ConfigManager} and reschedules the sweep task. */
-    public void reload() {
-        configManager.reload();
-        startSweepTask();
-    }
-
-    private void startSweepTask() {
-        if (sweepTask != null) {
-            sweepTask.cancel();
-        }
-        long sweepTicks = configManager.sweepIntervalSeconds() * 20L;
-        sweepTask = getServer().getScheduler().runTaskTimer(this, tracker::sweep, sweepTicks, sweepTicks);
+    /**
+     * Schedules the next pressure sweep, re-reading the interval each cycle so a reloaded
+     * {@code sweep-interval-seconds} takes effect without the plugin handling config reloads.
+     */
+    private void scheduleSweep() {
+        long ticks = Math.max(1L, configManager.sweepIntervalSeconds() * 20L);
+        sweepTask = getServer().getScheduler().runTaskLater(this, () -> {
+            tracker.sweep();
+            scheduleSweep();
+        }, ticks);
     }
 }
