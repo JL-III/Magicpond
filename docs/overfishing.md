@@ -82,7 +82,7 @@ Bukkit's config), and is reloadable at runtime with `/magicpond reload`.
 | Key | Default | Meaning |
 | --- | --- | --- |
 | `debug` *(top-level)* | `false` | Log extra detail, e.g. the magic-pond permission check on each pond catch. |
-| `enabled` | `true` | Master switch for the overfishing system only (not the magic-pond bonus). |
+| `enabled` *(top-level)* | `true` | Master switch for the whole plugin — gates both the magic pond and overfishing (live kill switch). |
 | `cell-size` | `6` | Grid cell edge in blocks (size of "one spot"). |
 | `pressure-cap` | `5.0` | Pressure at which a cell becomes depleted (≈ catches before it dries). |
 | `resume-threshold` | `2.0` | Recover below this to start catching again (hysteresis). |

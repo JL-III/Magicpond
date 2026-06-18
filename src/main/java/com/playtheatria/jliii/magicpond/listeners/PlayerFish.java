@@ -39,6 +39,7 @@ public class PlayerFish implements Listener {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void OnFishEvent(PlayerFishEvent event) {
         if (event.getCaught() == null || event.getState() != PlayerFishEvent.State.CAUGHT_FISH) return;
+        if (!configManager.enabled()) return;
         Location hook = event.getHook().getLocation();
         if (!ponds.isPond(hook)) return;
 
@@ -49,7 +50,7 @@ public class PlayerFish implements Listener {
         if (!canUse) return;
 
         // No bonus on an overfished spot — the player reeled in junk, not a fish.
-        if (configManager.overfishingEnabled() && tracker.isDepleted(player.getUniqueId(), tracker.cellOf(hook))) {
+        if (tracker.isDepleted(player.getUniqueId(), tracker.cellOf(hook))) {
             return;
         }
 

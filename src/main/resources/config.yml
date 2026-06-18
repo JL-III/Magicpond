@@ -10,17 +10,18 @@
 # by simply alternating between two fishing spots. Here every cell is tracked
 # independently, so alternation no longer helps.
 
+# Master switch for the whole plugin (magic pond AND overfishing). Set to false
+# to kill all features live, then run /magicpond reload.
+enabled: true
+
 # Log extra detail to the server console, e.g. the magic-pond permission check
 # on each pond catch. Leave off in production.
 debug: false
 
 # The magic-pond bonus is additionally gated behind the `magicpond.use`
-# permission. Overfishing below is global and applies to everyone regardless.
+# permission, so it can be revoked from individual players. Overfishing applies
+# to everyone (no permission) whenever the master switch above is on.
 overfishing:
-  # Master switch for the overfishing system only. Does NOT affect the
-  # magic-pond bonus (that is controlled by the magicpond.use permission).
-  enabled: true
-
   # Edge length, in blocks, of a grid cell. Hooks landing in the same cell
   # share one pressure pool. Bigger = a wider area counts as "one spot";
   # smaller = aiming your cast a few blocks over counts as a fresh spot.

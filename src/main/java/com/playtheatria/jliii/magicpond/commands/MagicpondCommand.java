@@ -89,7 +89,7 @@ public class MagicpondCommand implements CommandExecutor {
                 send(sender, "Cleared all tracked fishing pressure.", NamedTextColor.GREEN);
             }
             case "info" -> {
-                send(sender, "Overfishing: " + (configManager.overfishingEnabled() ? "enabled" : "disabled")
+                send(sender, "Magicpond: " + (configManager.enabled() ? "enabled" : "disabled")
                         + " | cell-size=" + configManager.cellSize()
                         + " | cap=" + configManager.pressureCap()
                         + " | warn=" + configManager.warnThreshold()
